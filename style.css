@@ -94,4 +94,5 @@ button.ghost{ background:#fff; color:var(--text); }
 }
 @media (max-width:380px){
   :root{ --tile-size:42px; --gap:4px; }
-  .key{ padd
+  .key{ padding:8px 6px; min-width:28px; font-size:14px;}
+}
