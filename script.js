@@ -16,6 +16,8 @@ const translationEl = document.getElementById("translation");
 
 function showMessage(text){ msg.textContent = text; }
 function showTranslation(text){ translationEl.innerHTML = text || ""; }
+function clearMessage(){ msg.textContent = ""; }
+
 function endGame(){
   isReady = false;
   inputEl.disabled = true;
@@ -50,17 +52,21 @@ const rows = [
     row.forEach(k=>{
       const b = document.createElement("button");
       b.className = "key"; b.textContent = k; b.id = `key-${k}`;
-      b.addEventListener("click", ()=>{ if(isReady && inputEl.value.length<wordLength) inputEl.value += k; });
+      b.addEventListener("click", ()=>{
+        if(isReady && inputEl.value.length<wordLength) inputEl.value += k;
+      });
       r.appendChild(b);
     });
     kb.appendChild(r);
   });
+
+  // HANYA Backspace (tidak ada Enter button)
   const r = document.createElement("div"); r.className = "key-row";
-  const back = document.createElement("button"); back.className="key"; back.textContent="⌫"; back.title="Backspace";
+  const back = document.createElement("button");
+  back.className="key"; back.textContent="⌫"; back.title="Backspace";
   back.addEventListener("click", ()=> inputEl.value = inputEl.value.slice(0,-1));
-  const enter = document.createElement("button"); enter.className="key"; enter.textContent="⏎"; enter.title="Enter";
-  enter.addEventListener("click", submitGuess);
-  r.appendChild(back); r.appendChild(enter); kb.appendChild(r);
+  r.appendChild(back);
+  kb.appendChild(r);
 })();
 
 // ====== INPUT ======
@@ -90,23 +96,20 @@ async function validateWord(word){
 }
 
 // ====== TRANSLATION (multi-fallback) ======
-// 1) Google (unofficial)
 async function translateViaGoogle(word){
   const url = `https://translate.googleapis.com/translate_a/single?client=gtx&sl=en&tl=id&dt=t&q=${encodeURIComponent(word)}`;
   const res = await fetch(url, {cache:"no-store"});
   if (!res.ok) throw new Error("google failed");
-  const data = await res.json(); // nested arrays
+  const data = await res.json();
   const translated = data?.[0]?.[0]?.[0] || "";
   return translated;
 }
-// 2) MyMemory
 async function translateViaMyMemory(word){
   const url = `https://api.mymemory.translated.net/get?q=${encodeURIComponent(word)}&langpair=en|id`;
   const res = await fetch(url, {cache:"no-store"});
   if (!res.ok) throw new Error("mymemory failed");
   const data = await res.json();
   return data?.responseData?.translatedText || "";
-// 3) LibreTranslate (public instance)
 }
 async function translateViaLibre(word){
   const res = await fetch("https://libretranslate.de/translate", {
@@ -118,8 +121,6 @@ async function translateViaLibre(word){
   const data = await res.json();
   return data?.translatedText || "";
 }
-
-// try all translators in order
 async function translateToIndonesian(word){
   const chain = [translateViaGoogle, translateViaMyMemory, translateViaLibre];
   for (const fn of chain){
@@ -128,7 +129,7 @@ async function translateToIndonesian(word){
       if (t && t.trim() && t.toUpperCase() !== word.toUpperCase()) return t.trim();
     }catch(_e){}
   }
-  return ""; // give up
+  return "";
 }
 
 // Load secret word, validate, then ready
@@ -150,7 +151,7 @@ async function initSecretWord(){
         console.log("Secret word:", secretWord);
         isReady = true;
         submitBtn.disabled = false;
-        showMessage("Ready!");
+        clearMessage();           // <-- tidak menampilkan "Ready!"
         inputEl.focus();
         return;
       }
@@ -162,7 +163,7 @@ async function initSecretWord(){
   console.warn("Using fallback word:", secretWord);
   isReady = true;
   submitBtn.disabled = false;
-  showMessage("Ready! (fallback word)");
+  clearMessage();                 // tetap kosong
   inputEl.focus();
 }
 initSecretWord();
@@ -170,7 +171,11 @@ initSecretWord();
 // ====== GAME LOGIC ======
 async function submitGuess(){
   if (!isReady) return;
+
   const guess = inputEl.value.toUpperCase();
+
+  // Bersihkan pesan agar "Not a valid..." tidak stay saat guess valid
+  clearMessage();
 
   if (guess.length !== wordLength){
     showMessage("Word must be 5 letters.");
