@@ -12,8 +12,10 @@ const inputEl = document.getElementById("guess-input");
 const submitBtn = document.getElementById("submit-guess");
 const playAgainBtn = document.getElementById("play-again");
 const msg = document.getElementById("message");
+const translationEl = document.getElementById("translation");
 
 function showMessage(text){ msg.textContent = text; }
+function showTranslation(text){ translationEl.innerHTML = text || ""; }
 function endGame(){
   isReady = false;
   inputEl.disabled = true;
@@ -73,32 +75,72 @@ playAgainBtn.addEventListener("click", ()=>location.reload());
 const FALLBACK_WORDS = ["ALONE","SALON","SNAIL","BOARD","PLANT","CHAIR","MOUSE","LIGHT","BRAVE","HOUSE","CLOUD","GREEN","SMART","POINT","DRIVE"];
 
 async function fetchRandomWordFromVercel(){
-  // Vercel endpoint (stabil, CORS OK)
   const res = await fetch("https://random-word-api.vercel.app/api?words=1&length=5", {cache:"no-store"});
-  const data = await res.json();               // contoh: ["plant"]
+  const data = await res.json();
   return (data && data[0]) ? data[0].toUpperCase() : null;
 }
 async function fetchRandomWordFromHeroku(){
-  // Heroku endpoint (cadangan)
   const res = await fetch("https://random-word-api.herokuapp.com/word?length=5", {cache:"no-store"});
   const data = await res.json();
   return (data && data[0]) ? data[0].toUpperCase() : null;
 }
 async function validateWord(word){
   const res = await fetch(`https://api.dictionaryapi.dev/api/v2/entries/en/${word.toLowerCase()}`, {cache:"no-store"});
-  return res.ok; // 200 jika valid, 404 jika tidak ada definisi
+  return res.ok;
 }
 
-// Ambil secret word dengan beberapa percobaan + fallback lokal
+// ====== TRANSLATION (multi-fallback) ======
+// 1) Google (unofficial)
+async function translateViaGoogle(word){
+  const url = `https://translate.googleapis.com/translate_a/single?client=gtx&sl=en&tl=id&dt=t&q=${encodeURIComponent(word)}`;
+  const res = await fetch(url, {cache:"no-store"});
+  if (!res.ok) throw new Error("google failed");
+  const data = await res.json(); // nested arrays
+  const translated = data?.[0]?.[0]?.[0] || "";
+  return translated;
+}
+// 2) MyMemory
+async function translateViaMyMemory(word){
+  const url = `https://api.mymemory.translated.net/get?q=${encodeURIComponent(word)}&langpair=en|id`;
+  const res = await fetch(url, {cache:"no-store"});
+  if (!res.ok) throw new Error("mymemory failed");
+  const data = await res.json();
+  return data?.responseData?.translatedText || "";
+// 3) LibreTranslate (public instance)
+}
+async function translateViaLibre(word){
+  const res = await fetch("https://libretranslate.de/translate", {
+    method: "POST",
+    headers: {"Content-Type":"application/json"},
+    body: JSON.stringify({q: word, source:"en", target:"id", format:"text"})
+  });
+  if (!res.ok) throw new Error("libre failed");
+  const data = await res.json();
+  return data?.translatedText || "";
+}
+
+// try all translators in order
+async function translateToIndonesian(word){
+  const chain = [translateViaGoogle, translateViaMyMemory, translateViaLibre];
+  for (const fn of chain){
+    try{
+      const t = await fn(word);
+      if (t && t.trim() && t.toUpperCase() !== word.toUpperCase()) return t.trim();
+    }catch(_e){}
+  }
+  return ""; // give up
+}
+
+// Load secret word, validate, then ready
 async function initSecretWord(){
   showMessage("Loading word...");
+  showTranslation("");
   submitBtn.disabled = true;
 
   const fetchers = [fetchRandomWordFromVercel, fetchRandomWordFromHeroku];
 
   for (let attempt = 0; attempt < 10; attempt++){
     try{
-      // coba kedua endpoint bergantian
       const fn = fetchers[attempt % fetchers.length];
       const candidate = await fn();
       if (!candidate) continue;
@@ -112,12 +154,10 @@ async function initSecretWord(){
         inputEl.focus();
         return;
       }
-    }catch(e){
-      // lanjut coba lagi
-    }
+    }catch(e){}
   }
 
-  // Fallback lokal (selalu berhasil)
+  // Fallback lokal
   secretWord = FALLBACK_WORDS[Math.floor(Math.random()*FALLBACK_WORDS.length)];
   console.warn("Using fallback word:", secretWord);
   isReady = true;
@@ -137,14 +177,12 @@ async function submitGuess(){
     return;
   }
 
-  // Validasi tebakan (kamus) supaya tidak asal
   const valid = await validateWord(guess).catch(()=>false);
   if (!valid){
     showMessage("❌ Not a valid English word!");
     return;
   }
 
-  // Tampilkan ke row aktif
   for (let i=0;i<wordLength;i++){
     const t = document.getElementById(`tile-${currentRow}-${i}`);
     t.textContent = guess[i];
@@ -154,6 +192,7 @@ async function submitGuess(){
 
   if (guess === secretWord){
     showMessage("🎉 You Win!");
+    await revealTranslation();
     endGame();
     return;
   }
@@ -163,6 +202,7 @@ async function submitGuess(){
 
   if (currentRow >= maxRows){
     showMessage(`❌ Game Over! The word was ${secretWord}`);
+    await revealTranslation();
     endGame();
   }
 }
@@ -196,5 +236,15 @@ function tintKey(letter, status){
     k.classList.add("key-present");
   } else if (!k.classList.contains("key-correct") && !k.classList.contains("key-present")){
     k.classList.add("key-absent");
+  }
+}
+
+async function revealTranslation(){
+  showTranslation("<small>Translating…</small>");
+  const indo = await translateToIndonesian(secretWord);
+  if (indo){
+    showTranslation(`Translation: <b>${secretWord}</b> → <b>${indo}</b>`);
+  }else{
+    showTranslation(`Translation: <b>${secretWord}</b> → <i>(unavailable)</i>`);
   }
 }
