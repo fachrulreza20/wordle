@@ -1,22 +1,35 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Wordle Clone</title>
-  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="style.css" />
 </head>
 <body>
-  <h1>Wordle Clone</h1>
+  <main class="container">
+    <h1>Wordle Clone</h1>
 
-  <div id="game-board"></div>
+    <div id="game-board" aria-label="Word grid" role="grid"></div>
 
-  <input type="text" id="guess-input" maxlength="5" placeholder="Type or use keyboard">
-  <button id="submit-guess">Submit</button>
+    <div class="controls">
+      <input
+        type="text"
+        id="guess-input"
+        maxlength="5"
+        placeholder="Type or use keyboard"
+        aria-label="Type your 5-letter guess"
+        autocomplete="off"
+        autocapitalize="characters"
+      />
+      <button id="submit-guess" disabled>Submit</button>
+      <button id="play-again" class="ghost" hidden>Play Again</button>
+    </div>
 
-  <p id="message"></p>
+    <p id="message" role="status" aria-live="polite">Loading word...</p>
 
-  <div id="keyboard"></div>
+    <div id="keyboard" aria-label="On-screen keyboard"></div>
+  </main>
 
   <script src="script.js"></script>
 </body>
