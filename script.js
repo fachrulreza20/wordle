@@ -13,11 +13,11 @@ const submitBtn = document.getElementById("submit-guess");
 const playAgainBtn = document.getElementById("play-again");
 const msg = document.getElementById("message");
 const translationEl = document.getElementById("translation");
+const sigCanvas = document.getElementById("sig-canvas");
 
-function showMessage(text){ msg.textContent = text; }
+function showMessage(text){ msg.textContent = text || ""; }
 function showTranslation(text){ translationEl.innerHTML = text || ""; }
 function clearMessage(){ msg.textContent = ""; }
-
 function endGame(){
   isReady = false;
   inputEl.disabled = true;
@@ -38,13 +38,12 @@ function endGame(){
   }
 })();
 
-// ====== KEYBOARD ======
+// ====== KEYBOARD (tanpa tombol Enter) ======
 const rows = [
   ["Q","W","E","R","T","Y","U","I","O","P"],
   ["A","S","D","F","G","H","J","K","L"],
   ["Z","X","C","V","B","N","M"]
 ];
-
 (function createKeyboard(){
   const kb = document.getElementById("keyboard");
   rows.forEach(row=>{
@@ -59,8 +58,6 @@ const rows = [
     });
     kb.appendChild(r);
   });
-
-  // HANYA Backspace (tidak ada Enter button)
   const r = document.createElement("div"); r.className = "key-row";
   const back = document.createElement("button");
   back.className="key"; back.textContent="⌫"; back.title="Backspace";
@@ -148,10 +145,9 @@ async function initSecretWord(){
       const ok = await validateWord(candidate);
       if (ok){
         secretWord = candidate;
-        console.log("Secret word:", secretWord);
         isReady = true;
         submitBtn.disabled = false;
-        clearMessage();           // <-- tidak menampilkan "Ready!"
+        clearMessage(); // jangan tampil "Ready!"
         inputEl.focus();
         return;
       }
@@ -160,10 +156,9 @@ async function initSecretWord(){
 
   // Fallback lokal
   secretWord = FALLBACK_WORDS[Math.floor(Math.random()*FALLBACK_WORDS.length)];
-  console.warn("Using fallback word:", secretWord);
   isReady = true;
   submitBtn.disabled = false;
-  clearMessage();                 // tetap kosong
+  clearMessage();
   inputEl.focus();
 }
 initSecretWord();
@@ -173,9 +168,7 @@ async function submitGuess(){
   if (!isReady) return;
 
   const guess = inputEl.value.toUpperCase();
-
-  // Bersihkan pesan agar "Not a valid..." tidak stay saat guess valid
-  clearMessage();
+  clearMessage(); // pastikan pesan lama hilang kalau guess valid
 
   if (guess.length !== wordLength){
     showMessage("Word must be 5 letters.");
@@ -188,6 +181,7 @@ async function submitGuess(){
     return;
   }
 
+  // render row
   for (let i=0;i<wordLength;i++){
     const t = document.getElementById(`tile-${currentRow}-${i}`);
     t.textContent = guess[i];
@@ -244,12 +238,38 @@ function tintKey(letter, status){
   }
 }
 
+// ====== Translation output with 🇮🇩 flag ======
 async function revealTranslation(){
   showTranslation("<small>Translating…</small>");
   const indo = await translateToIndonesian(secretWord);
   if (indo){
-    showTranslation(`Translation: <b>${secretWord}</b> → <b>${indo}</b>`);
+    showTranslation(`<span class="flag">🇮🇩</span> Translation: <b>${secretWord}</b> → <b>${indo}</b>`);
   }else{
-    showTranslation(`Translation: <b>${secretWord}</b> → <i>(unavailable)</i>`);
+    showTranslation(`<span class="flag">🇮🇩</span> Translation: <b>${secretWord}</b> → <i>(unavailable)</i>`);
   }
 }
+
+// ====== Signature (email) via canvas, diobfusikasi ======
+(function renderSignature(){
+  try{
+    const ctx = sigCanvas.getContext("2d");
+    // potongan base64 agar tidak ada email utuh di source
+    const a = atob("ZmFjaHJ1bHJl");   // 'fachrulre'
+    const b = atob("emEyMA==");        // 'za20'
+    const c = atob("Z21haWwuY29t");    // 'gmail.com'
+    const email = a + b + "@" + c;     // fachrulreza20@gmail.com
+
+    // ukuran & render
+    const text = "by " + email;
+    const paddingX = 10, paddingY = 6;
+    ctx.font = "12px system-ui, -apple-system, Segoe UI, Roboto, Arial";
+    const w = Math.ceil(ctx.measureText(text).width) + paddingX*2;
+    const h = 22 + paddingY*2;
+    sigCanvas.width = w; sigCanvas.height = h;
+
+    ctx.font = "12px system-ui, -apple-system, Segoe UI, Roboto, Arial";
+    ctx.fillStyle = "rgba(0,0,0,0.6)";
+    ctx.textBaseline = "middle";
+    ctx.fillText(text, paddingX, h/2);
+  }catch(_e){}
+})();
