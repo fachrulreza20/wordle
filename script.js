@@ -189,21 +189,21 @@ async function submitGuess(){
 
   colorize(guess);
 
-  if (guess === secretWord){
-    showMessage("🎉 You Win!");
-    await revealTranslation();
-    endGame();
-    return;
-  }
+if (guess === secretWord){
+  showMessage("🎉 You Win!");
+  await revealTranslation();
+  await endGameWithStats(true);   // <-- pakai stats
+  return;
+}
 
   currentRow++;
   inputEl.value = "";
 
-  if (currentRow >= maxRows){
-    showMessage(`❌ Game Over! The word was ${secretWord}`);
-    await revealTranslation();
-    endGame();
-  }
+if (currentRow >= maxRows){
+  showMessage(`❌ Game Over! The word was ${secretWord}`);
+  await revealTranslation();
+  await endGameWithStats(false);  // <-- pakai stats
+}
 }
 
 function colorize(guess){
@@ -248,6 +248,53 @@ async function revealTranslation(){
     showTranslation(`<span class="flag">🇮🇩</span> Translation: <b>${secretWord}</b> → <i>(unavailable)</i>`);
   }
 }
+
+// ====== STATISTICS ======
+function loadStats(){
+  let stats = JSON.parse(localStorage.getItem("wordleStats"));
+  if (!stats){
+    stats = { played: 0, wins: 0, currentStreak: 0, bestStreak: 0 };
+  }
+  return stats;
+}
+
+function saveStats(stats){
+  localStorage.setItem("wordleStats", JSON.stringify(stats));
+}
+
+function updateStatsDisplay(){
+  const stats = loadStats();
+  const winRate = stats.played ? Math.round((stats.wins / stats.played) * 100) : 0;
+  document.getElementById("stats-body").innerHTML = `
+    <div><span>${stats.played}</span>Played</div>
+    <div><span>${stats.wins}</span>Wins</div>
+    <div><span>${winRate}%</span>Win Rate</div>
+    <div><span>${stats.currentStreak}</span>Streak</div>
+    <div><span>${stats.bestStreak}</span>Best</div>
+  `;
+}
+
+// update stats setelah game selesai
+async function endGameWithStats(win){
+  let stats = loadStats();
+  stats.played++;
+  if (win){
+    stats.wins++;
+    stats.currentStreak++;
+    if (stats.currentStreak > stats.bestStreak){
+      stats.bestStreak = stats.currentStreak;
+    }
+  }else{
+    stats.currentStreak = 0;
+  }
+  saveStats(stats);
+  updateStatsDisplay();
+  endGame(); // panggil endGame yang sudah ada
+}
+
+// Panggil sekali saat load
+updateStatsDisplay();
+
 
 // ====== Signature (email) via canvas, diobfusikasi ======
 (function renderSignature(){
