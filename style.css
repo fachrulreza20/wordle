@@ -1,104 +1,149 @@
-body {
-  font-family: Arial, sans-serif;
-  background: #f4f4f4;
-  text-align: center;
-  margin-top: 20px;
+:root{
+  --tile-size: 60px;
+  --gap: 6px;
+  --radius: 8px;
+  --bg: #f5f7fb;
+  --panel: #ffffff;
+  --text: #111827;
+  --muted: #6b7280;
+  --correct: #22c55e;
+  --present: #f59e0b;
+  --absent: #9ca3af;
+  --key: #e5e7eb;
+  --key-hover: #d1d5db;
+  --border: #e5e7eb;
+  --shadow: 0 8px 24px rgba(0,0,0,.08);
 }
 
-h1 {
-  margin-bottom: 20px;
+*{box-sizing:border-box}
+html,body{height:100%}
+body{
+  margin:0;
+  font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+  color:var(--text);
+  background:linear-gradient(180deg,#eef2ff 0%,#fdfdfd 60%);
 }
 
-#game-board {
-  display: grid;
-  grid-template-rows: repeat(6, 60px);
-  grid-template-columns: repeat(5, 60px);
-  gap: 5px;
-  justify-content: center;
-  margin-bottom: 20px;
-}
-
-.tile {
-  width: 60px;
-  height: 60px;
-  border: 2px solid #ccc;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 24px;
-  font-weight: bold;
-  background: white;
-  text-transform: uppercase;
-}
-
-.correct {
-  background: green !important;
-  color: white;
-}
-
-.present {
-  background: goldenrod !important;
-  color: white;
-}
-
-.absent {
-  background: grey !important;
-  color: white;
-}
-
-/* Input + button */
-#guess-input {
-  padding: 10px;
-  font-size: 18px;
-  text-transform: uppercase;
-  width: 160px;
+.container{
+  max-width: 760px;
+  margin: 24px auto 56px;
+  padding: 16px;
   text-align: center;
 }
 
-#submit-guess {
-  padding: 10px 20px;
+h1{
+  margin: 8px 0 20px;
+  font-size: 32px;
+  letter-spacing: .5px;
+}
+
+#game-board{
+  display:grid;
+  grid-template-columns: repeat(5, var(--tile-size));
+  grid-template-rows: repeat(6, var(--tile-size));
+  gap: var(--gap);
+  justify-content:center;
+  margin: 0 auto 16px;
+  padding: 16px;
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+}
+
+.tile{
+  width: var(--tile-size);
+  height: var(--tile-size);
+  border: 2px solid var(--border);
+  border-radius: 10px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  font-weight: 800;
+  font-size: 26px;
+  text-transform: uppercase;
+  background: #fff;
+}
+
+.tile.correct{ background: var(--correct); color:#fff; border-color: transparent; }
+.tile.present{ background: var(--present); color:#fff; border-color: transparent; }
+.tile.absent{ background: var(--absent); color:#fff; border-color: transparent; }
+
+.controls{
+  display:flex;
+  gap:10px;
+  justify-content:center;
+  align-items:center;
+  margin: 8px 0 6px;
+}
+
+#guess-input{
+  width: 200px;
+  padding: 10px 12px;
   font-size: 18px;
-  margin-left: 5px;
-  cursor: pointer;
+  text-transform: uppercase;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background:#fff;
 }
 
-/* Keyboard Virtual */
-#keyboard {
-  margin-top: 30px;
+button{
+  padding: 10px 16px;
+  font-size: 16px;
+  border-radius: 12px;
+  border: 1px solid var(--border);
+  background:#111827;
+  color:#fff;
+  cursor:pointer;
+  transition: transform .03s ease, filter .15s ease;
+}
+button:disabled{filter:grayscale(.6); cursor:not-allowed}
+button:active{transform: translateY(1px)}
+button.ghost{
+  background: #fff;
+  color: var(--text);
 }
 
-.key-row {
-  display: flex;
-  justify-content: center;
-  margin: 5px 0;
+#message{
+  min-height: 24px;
+  color: var(--muted);
+  margin: 6px 0 10px;
 }
 
-.key {
-  padding: 15px 10px;
-  margin: 2px;
+#keyboard{
+  margin: 18px auto 0;
+  max-width: 720px;
+}
+.key-row{
+  display:flex;
+  justify-content:center;
+  gap:6px;
+  margin: 6px 0;
+}
+.key{
   border: none;
-  border-radius: 4px;
-  background: #ddd;
-  font-size: 18px;
-  font-weight: bold;
-  cursor: pointer;
-  min-width: 35px;
+  border-radius: 10px;
+  background: var(--key);
+  padding: 12px 10px;
+  font-weight: 700;
+  font-size: 16px;
+  min-width: 36px;
   text-transform: uppercase;
+  cursor: pointer;
 }
+.key:hover{ background: var(--key-hover); }
+.key-correct{ background: var(--correct) !important; color:#fff; }
+.key-present{ background: var(--present) !important; color:#fff; }
+.key-absent{ background: var(--absent) !important; color:#fff; }
 
-.key:hover {
-  background: #bbb;
+/* Responsive */
+@media (max-width: 540px){
+  :root{ --tile-size: 48px; --gap: 5px; }
+  h1{ font-size: 26px; }
+  #guess-input{ width: 160px; }
+  .key{ padding: 10px 8px; min-width: 32px; font-size: 15px;}
 }
-
-.key-correct {
-  background: green !important;
-  color: white;
-}
-.key-present {
-  background: goldenrod !important;
-  color: white;
-}
-.key-absent {
-  background: grey !important;
-  color: white;
+@media (max-width: 380px){
+  :root{ --tile-size: 42px; --gap: 4px; }
+  .key{ padding: 8px 6px; min-width: 28px; font-size: 14px;}
 }
