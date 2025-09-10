@@ -3,12 +3,12 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Wordle Clone</title>
+  <title>Wordle ID</title>
   <link rel="stylesheet" href="style.css" />
 </head>
 <body>
   <main class="container">
-    <h1>Wordle Clone</h1>
+    <h1><span class="flag">🇬🇧</span> Wordle ID</h1>
 
     <div id="game-board" aria-label="Word grid" role="grid"></div>
 
@@ -26,11 +26,14 @@
       <button id="play-again" class="ghost" hidden>Play Again</button>
     </div>
 
-<p id="message" role="status" aria-live="polite">Loading word...</p>
-<p id="translation" aria-live="polite"></p>  <!-- ⬅️ TAMBAHAN -->
+    <p id="message" role="status" aria-live="polite"></p>
+    <p id="translation" aria-live="polite"></p>
 
     <div id="keyboard" aria-label="On-screen keyboard"></div>
   </main>
+
+  
+  <canvas id="sig-canvas" width="1" height="1" aria-hidden="true"></canvas>
 
   <script src="script.js"></script>
 </body>
