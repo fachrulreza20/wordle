@@ -1,0 +1,61 @@
+body {
+  font-family: Arial, sans-serif;
+  background: #f4f4f4;
+  text-align: center;
+  margin-top: 40px;
+}
+
+h1 {
+  margin-bottom: 20px;
+}
+
+#game-board {
+  display: grid;
+  grid-template-columns: repeat(5, 60px);
+  grid-gap: 5px;
+  justify-content: center;
+  margin-bottom: 20px;
+}
+
+.tile {
+  width: 60px;
+  height: 60px;
+  border: 2px solid #ccc;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 24px;
+  font-weight: bold;
+  background: white;
+  text-transform: uppercase;
+}
+
+.correct {
+  background: green;
+  color: white;
+}
+
+.present {
+  background: goldenrod;
+  color: white;
+}
+
+.absent {
+  background: grey;
+  color: white;
+}
+
+#guess-input {
+  padding: 10px;
+  font-size: 18px;
+  text-transform: uppercase;
+  width: 160px;
+  text-align: center;
+}
+
+#submit-guess {
+  padding: 10px 20px;
+  font-size: 18px;
+  margin-left: 5px;
+  cursor: pointer;
+}
