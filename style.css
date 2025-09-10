@@ -147,3 +147,12 @@ button.ghost{
   :root{ --tile-size: 42px; --gap: 4px; }
   .key{ padding: 8px 6px; min-width: 28px; font-size: 14px;}
 }
+#translation{
+  margin: 4px 0 0;
+  color: #111827;
+  font-weight: 600;
+}
+#translation small{
+  color: #6b7280;
+  font-weight: 500;
+}
