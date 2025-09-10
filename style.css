@@ -2,7 +2,7 @@ body {
   font-family: Arial, sans-serif;
   background: #f4f4f4;
   text-align: center;
-  margin-top: 40px;
+  margin-top: 20px;
 }
 
 h1 {
@@ -11,8 +11,9 @@ h1 {
 
 #game-board {
   display: grid;
+  grid-template-rows: repeat(6, 60px);
   grid-template-columns: repeat(5, 60px);
-  grid-gap: 5px;
+  gap: 5px;
   justify-content: center;
   margin-bottom: 20px;
 }
@@ -31,20 +32,21 @@ h1 {
 }
 
 .correct {
-  background: green;
+  background: green !important;
   color: white;
 }
 
 .present {
-  background: goldenrod;
+  background: goldenrod !important;
   color: white;
 }
 
 .absent {
-  background: grey;
+  background: grey !important;
   color: white;
 }
 
+/* Input + button */
 #guess-input {
   padding: 10px;
   font-size: 18px;
@@ -58,4 +60,45 @@ h1 {
   font-size: 18px;
   margin-left: 5px;
   cursor: pointer;
+}
+
+/* Keyboard Virtual */
+#keyboard {
+  margin-top: 30px;
+}
+
+.key-row {
+  display: flex;
+  justify-content: center;
+  margin: 5px 0;
+}
+
+.key {
+  padding: 15px 10px;
+  margin: 2px;
+  border: none;
+  border-radius: 4px;
+  background: #ddd;
+  font-size: 18px;
+  font-weight: bold;
+  cursor: pointer;
+  min-width: 35px;
+  text-transform: uppercase;
+}
+
+.key:hover {
+  background: #bbb;
+}
+
+.key-correct {
+  background: green !important;
+  color: white;
+}
+.key-present {
+  background: goldenrod !important;
+  color: white;
+}
+.key-absent {
+  background: grey !important;
+  color: white;
 }
