@@ -6,22 +6,36 @@ let secretWord = "";
 let currentRow = 0;
 let isReady = false;
 
+// ====== HELPERS UI ======
+const boardEl = document.getElementById("game-board");
+const inputEl = document.getElementById("guess-input");
+const submitBtn = document.getElementById("submit-guess");
+const playAgainBtn = document.getElementById("play-again");
+const msg = document.getElementById("message");
+
+function showMessage(text){ msg.textContent = text; }
+function endGame(){
+  isReady = false;
+  inputEl.disabled = true;
+  submitBtn.disabled = true;
+  playAgainBtn.hidden = false;
+}
+
 // ====== INIT BOARD (6x5) ======
 (function initBoard(){
-  const board = document.getElementById("game-board");
   for (let r = 0; r < maxRows; r++){
     for (let c = 0; c < wordLength; c++){
       const d = document.createElement("div");
       d.className = "tile";
       d.id = `tile-${r}-${c}`;
       d.setAttribute("role","gridcell");
-      board.appendChild(d);
+      boardEl.appendChild(d);
     }
   }
 })();
 
 // ====== KEYBOARD ======
-const keys = [
+const rows = [
   ["Q","W","E","R","T","Y","U","I","O","P"],
   ["A","S","D","F","G","H","J","K","L"],
   ["Z","X","C","V","B","N","M"]
@@ -29,102 +43,89 @@ const keys = [
 
 (function createKeyboard(){
   const kb = document.getElementById("keyboard");
-  keys.forEach(row=>{
-    const r = document.createElement("div");
-    r.className = "key-row";
+  rows.forEach(row=>{
+    const r = document.createElement("div"); r.className = "key-row";
     row.forEach(k=>{
       const b = document.createElement("button");
-      b.className = "key";
-      b.textContent = k;
-      b.id = `key-${k}`;
-      b.addEventListener("click", ()=>addLetter(k));
+      b.className = "key"; b.textContent = k; b.id = `key-${k}`;
+      b.addEventListener("click", ()=>{ if(isReady && inputEl.value.length<wordLength) inputEl.value += k; });
       r.appendChild(b);
     });
     kb.appendChild(r);
   });
-
-  // Backspace + Enter row
-  const r = document.createElement("div");
-  r.className = "key-row";
-  const back = document.createElement("button");
-  back.className = "key";
-  back.textContent = "⌫";
-  back.title = "Backspace";
-  back.addEventListener("click", backspace);
-
-  const enter = document.createElement("button");
-  enter.className = "key";
-  enter.textContent = "⏎";
-  enter.title = "Enter";
+  const r = document.createElement("div"); r.className = "key-row";
+  const back = document.createElement("button"); back.className="key"; back.textContent="⌫"; back.title="Backspace";
+  back.addEventListener("click", ()=> inputEl.value = inputEl.value.slice(0,-1));
+  const enter = document.createElement("button"); enter.className="key"; enter.textContent="⏎"; enter.title="Enter";
   enter.addEventListener("click", submitGuess);
-
-  r.appendChild(back);
-  r.appendChild(enter);
-  kb.appendChild(r);
+  r.appendChild(back); r.appendChild(enter); kb.appendChild(r);
 })();
 
-// ====== INPUT HANDLERS ======
-const inputEl = document.getElementById("guess-input");
-const submitBtn = document.getElementById("submit-guess");
-const playAgainBtn = document.getElementById("play-again");
-const msg = document.getElementById("message");
-
+// ====== INPUT ======
 inputEl.addEventListener("input", ()=> {
   inputEl.value = inputEl.value.toUpperCase().replace(/[^A-Z]/g,"").slice(0, wordLength);
 });
-inputEl.addEventListener("keydown", (e)=>{
-  if (e.key === "Enter") submitGuess();
-});
+inputEl.addEventListener("keydown", (e)=>{ if(e.key==="Enter") submitGuess(); });
 submitBtn.addEventListener("click", submitGuess);
 playAgainBtn.addEventListener("click", ()=>location.reload());
 
-// on-screen keyboard helpers
-function addLetter(ch){
-  if (!isReady) return;
-  if (inputEl.value.length < wordLength){
-    inputEl.value += ch;
-  }
-}
-function backspace(){
-  inputEl.value = inputEl.value.slice(0,-1);
-}
+// ====== API & FALLBACK ======
+const FALLBACK_WORDS = ["ALONE","SALON","SNAIL","BOARD","PLANT","CHAIR","MOUSE","LIGHT","BRAVE","HOUSE","CLOUD","GREEN","SMART","POINT","DRIVE"];
 
-// ====== API HELPERS ======
-async function fetchRandomWord(){
-  // Random Word API (no key, CORS OK)
-  const res = await fetch("https://random-word-api.herokuapp.com/word?length=5",{cache:"no-store"});
-  const data = await res.json(); // e.g. ["plant"]
+async function fetchRandomWordFromVercel(){
+  // Vercel endpoint (stabil, CORS OK)
+  const res = await fetch("https://random-word-api.vercel.app/api?words=1&length=5", {cache:"no-store"});
+  const data = await res.json();               // contoh: ["plant"]
+  return (data && data[0]) ? data[0].toUpperCase() : null;
+}
+async function fetchRandomWordFromHeroku(){
+  // Heroku endpoint (cadangan)
+  const res = await fetch("https://random-word-api.herokuapp.com/word?length=5", {cache:"no-store"});
+  const data = await res.json();
   return (data && data[0]) ? data[0].toUpperCase() : null;
 }
 async function validateWord(word){
-  // Free Dictionary API — 200 if exists, 404 if not
   const res = await fetch(`https://api.dictionaryapi.dev/api/v2/entries/en/${word.toLowerCase()}`, {cache:"no-store"});
-  return res.ok;
+  return res.ok; // 200 jika valid, 404 jika tidak ada definisi
 }
 
-// Load secretWord (keep trying until valid)
-(async function initSecretWord(){
-  msg.textContent = "Loading word...";
+// Ambil secret word dengan beberapa percobaan + fallback lokal
+async function initSecretWord(){
+  showMessage("Loading word...");
   submitBtn.disabled = true;
 
-  for (let i=0; i<8; i++){
+  const fetchers = [fetchRandomWordFromVercel, fetchRandomWordFromHeroku];
+
+  for (let attempt = 0; attempt < 10; attempt++){
     try{
-      const candidate = await fetchRandomWord();
+      // coba kedua endpoint bergantian
+      const fn = fetchers[attempt % fetchers.length];
+      const candidate = await fn();
       if (!candidate) continue;
       const ok = await validateWord(candidate);
       if (ok){
-        secretWord = candidate.toUpperCase();
-        console.log("Secret word:", secretWord); // dev
-        msg.textContent = "Ready!";
+        secretWord = candidate;
+        console.log("Secret word:", secretWord);
         isReady = true;
         submitBtn.disabled = false;
+        showMessage("Ready!");
         inputEl.focus();
         return;
       }
-    }catch(_e){}
+    }catch(e){
+      // lanjut coba lagi
+    }
   }
-  msg.textContent = "Failed to load word. Please refresh.";
-})();
+
+  // Fallback lokal (selalu berhasil)
+  secretWord = FALLBACK_WORDS[Math.floor(Math.random()*FALLBACK_WORDS.length)];
+  console.warn("Using fallback word:", secretWord);
+  isReady = true;
+  submitBtn.disabled = false;
+  showMessage("Ready! (fallback word)");
+  inputEl.focus();
+}
+initSecretWord();
 
 // ====== GAME LOGIC ======
 async function submitGuess(){
@@ -136,14 +137,14 @@ async function submitGuess(){
     return;
   }
 
-  // validate guess via dictionary API (to prevent nonsense words)
-  const ok = await validateWord(guess);
-  if (!ok){
+  // Validasi tebakan (kamus) supaya tidak asal
+  const valid = await validateWord(guess).catch(()=>false);
+  if (!valid){
     showMessage("❌ Not a valid English word!");
     return;
   }
 
-  // render guess in the current row
+  // Tampilkan ke row aktif
   for (let i=0;i<wordLength;i++){
     const t = document.getElementById(`tile-${currentRow}-${i}`);
     t.textContent = guess[i];
@@ -168,17 +169,17 @@ async function submitGuess(){
 
 function colorize(guess){
   for (let i=0;i<wordLength;i++){
-    const t = document.getElementById(`tile-${currentRow}-${i}`);
+    const tile = document.getElementById(`tile-${currentRow}-${i}`);
     const ch = guess[i];
 
     if (ch === secretWord[i]){
-      t.classList.add("correct");
+      tile.classList.add("correct");
       tintKey(ch,"correct");
-    }else if (secretWord.includes(ch)){
-      t.classList.add("present");
+    } else if (secretWord.includes(ch)){
+      tile.classList.add("present");
       tintKey(ch,"present");
-    }else{
-      t.classList.add("absent");
+    } else {
+      tile.classList.add("absent");
       tintKey(ch,"absent");
     }
   }
@@ -187,7 +188,6 @@ function colorize(guess){
 function tintKey(letter, status){
   const k = document.getElementById(`key-${letter}`);
   if (!k) return;
-
   if (status === "correct"){
     k.classList.remove("key-present","key-absent");
     k.classList.add("key-correct");
@@ -197,15 +197,4 @@ function tintKey(letter, status){
   } else if (!k.classList.contains("key-correct") && !k.classList.contains("key-present")){
     k.classList.add("key-absent");
   }
-}
-
-function showMessage(text){
-  msg.textContent = text;
-}
-
-function endGame(){
-  isReady = false;
-  inputEl.disabled = true;
-  submitBtn.disabled = true;
-  playAgainBtn.hidden = false;
 }
