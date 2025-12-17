@@ -123,6 +123,12 @@ button.ghost{ background:#fff; color:var(--text); }
 #stats-body div {
   flex: 1;
 }
+/* tombol backspace lebih lebar biar nyaman */
+.key-wide{
+  min-width: 64px;
+  padding-left: 14px;
+  padding-right: 14px;
+}
 
 #stats-body span {
   display: block;
