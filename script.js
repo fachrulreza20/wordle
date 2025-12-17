@@ -38,33 +38,42 @@ function endGame(){
   }
 })();
 
-// ====== KEYBOARD (tanpa tombol Enter) ======
+// ====== KEYBOARD (Backspace di sebelah M) ======
 const rows = [
   ["Q","W","E","R","T","Y","U","I","O","P"],
   ["A","S","D","F","G","H","J","K","L"],
-  ["Z","X","C","V","B","N","M"]
+  ["Z","X","C","V","B","N","M","⌫"]
 ];
+
 (function createKeyboard(){
   const kb = document.getElementById("keyboard");
   rows.forEach(row=>{
     const r = document.createElement("div"); r.className = "key-row";
+
     row.forEach(k=>{
       const b = document.createElement("button");
-      b.className = "key"; b.textContent = k; b.id = `key-${k}`;
-      b.addEventListener("click", ()=>{
-        if(isReady && inputEl.value.length<wordLength) inputEl.value += k;
-      });
+      b.className = "key";
+
+      if (k === "⌫"){
+        b.textContent = "⌫";
+        b.title = "Backspace";
+        b.classList.add("key-wide");
+        b.addEventListener("click", ()=> inputEl.value = inputEl.value.slice(0,-1));
+      } else {
+        b.textContent = k;
+        b.id = `key-${k}`;
+        b.addEventListener("click", ()=>{
+          if(isReady && inputEl.value.length < wordLength) inputEl.value += k;
+        });
+      }
+
       r.appendChild(b);
     });
+
     kb.appendChild(r);
   });
-  const r = document.createElement("div"); r.className = "key-row";
-  const back = document.createElement("button");
-  back.className="key"; back.textContent="⌫"; back.title="Backspace";
-  back.addEventListener("click", ()=> inputEl.value = inputEl.value.slice(0,-1));
-  r.appendChild(back);
-  kb.appendChild(r);
 })();
+
 
 // ====== INPUT ======
 inputEl.addEventListener("input", ()=> {
@@ -91,6 +100,36 @@ async function validateWord(word){
   const res = await fetch(`https://api.dictionaryapi.dev/api/v2/entries/en/${word.toLowerCase()}`, {cache:"no-store"});
   return res.ok;
 }
+
+async function fetchDictionaryEntry(word){
+  try{
+    const res = await fetch(`https://api.dictionaryapi.dev/api/v2/entries/en/${word.toLowerCase()}`, {cache:"no-store"});
+    if (!res.ok) return null;
+    const data = await res.json();
+    return Array.isArray(data) ? data[0] : null;
+  }catch{
+    return null;
+  }
+}
+
+function pickSmartDefinition(entry){
+  // pilih definisi pertama yang paling “berguna”
+  const meanings = entry?.meanings || [];
+  for (const m of meanings){
+    const defs = m?.definitions || [];
+    for (const d of defs){
+      if (d?.definition) {
+        return {
+          pos: m.partOfSpeech || "",
+          definition: d.definition,
+          example: d.example || ""
+        };
+      }
+    }
+  }
+  return null;
+}
+
 
 // ====== TRANSLATION (multi-fallback) ======
 async function translateViaGoogle(word){
@@ -240,14 +279,31 @@ function tintKey(letter, status){
 
 // ====== Translation output with 🇮🇩 flag ======
 async function revealTranslation(){
-  showTranslation("<small>Translating…</small>");
+  showTranslation("<small>Loading meaning…</small>");
+
+  // 1) Kamus (paling penting)
+  const entry = await fetchDictionaryEntry(secretWord);
+  const picked = entry ? pickSmartDefinition(entry) : null;
+
+  // 2) Terjemahan (bonus, boleh gagal / boleh salah)
   const indo = await translateToIndonesian(secretWord);
-  if (indo){
-    showTranslation(`<span class="flag">🇮🇩</span> Translation: <b>${secretWord}</b> → <b>${indo}</b>`);
-  }else{
-    showTranslation(`<span class="flag">🇮🇩</span> Translation: <b>${secretWord}</b> → <i>(unavailable)</i>`);
+
+  // 3) Render output (selalu tampilkan definisi jika ada)
+  let html = `<span class="flag">🇮🇩</span> Translation: <b>${secretWord}</b> → `;
+  html += indo ? `<b>${indo}</b>` : `<i>(unavailable)</i>`;
+
+  if (picked){
+    html += `<br><span class="flag">🇬🇧</span> <b>${picked.pos || "meaning"}</b>: ${picked.definition}`;
+    if (picked.example){
+      html += `<br><small>Example: “${picked.example}”</small>`;
+    }
+  } else {
+    html += `<br><small>(Dictionary meaning unavailable)</small>`;
   }
+
+  showTranslation(html);
 }
+
 
 // ====== STATISTICS ======
 function loadStats(){
