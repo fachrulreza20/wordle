@@ -1,6 +1,6 @@
-:root{
-  --tile-size: 60px;
-  --gap: 6px;
+:root {
+  --tile-size: 48px;
+  --gap: 5px;
   --radius: 8px;
   --panel: #ffffff;
   --text: #111827;
@@ -11,106 +11,248 @@
   --key: #e5e7eb;
   --key-hover: #d1d5db;
   --border: #e5e7eb;
-  --shadow: 0 8px 24px rgba(0,0,0,.08);
+  --shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
 }
 
-*{box-sizing:border-box}
-html,body{height:100%}
-body{
-  margin:0;
-  font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
-  color:var(--text);
-  background:linear-gradient(180deg,#eef2ff 0%,#fdfdfd 60%);
+* {
+  box-sizing: border-box;
 }
 
-.container{ max-width:760px; margin:24px auto 56px; padding:16px; text-align:center; }
-h1{ margin:8px 0 20px; font-size:32px; letter-spacing:.5px; display:flex; gap:10px; align-items:center; justify-content:center;}
-.flag{ font-size:24px; line-height:1; }
+html,
+body {
+  height: 100%;
+}
 
-#game-board{
-  display:grid;
+body {
+  margin: 0;
+  font-family: system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
+  color: var(--text);
+  background: linear-gradient(180deg, #eef2ff 0%, #fdfdfd 60%);
+  font-size: 14px;
+}
+
+.container {
+  max-width: 760px;
+  margin: 18px auto 48px;
+  padding: 12px;
+  text-align: center;
+}
+
+h1 {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  margin: 6px 0 16px;
+  font-size: 25px;
+  letter-spacing: 0.5px;
+}
+
+.flag {
+  font-size: 18px;
+  line-height: 1;
+}
+
+/* GAME BOARD */
+
+#game-board {
+  display: grid;
   grid-template-columns: repeat(5, var(--tile-size));
   grid-template-rows: repeat(6, var(--tile-size));
   gap: var(--gap);
-  justify-content:center;
-  margin: 0 auto 16px;
-  padding: 16px;
+  justify-content: center;
+  margin: 0 auto 13px;
+  padding: 12px;
   background: var(--panel);
   border: 1px solid var(--border);
   border-radius: var(--radius);
   box-shadow: var(--shadow);
 }
-.tile{
-  width: var(--tile-size); height: var(--tile-size);
-  border: 2px solid var(--border); border-radius: 10px;
-  display:flex; align-items:center; justify-content:center;
-  font-weight:800; font-size:26px; text-transform:uppercase; background:#fff;
-}
-.tile.correct{ background: var(--correct); color:#fff; border-color: transparent; }
-.tile.present{ background: var(--present); color:#fff; border-color: transparent; }
-.tile.absent{  background: var(--absent);  color:#fff; border-color: transparent; }
 
-.controls{ display:flex; gap:10px; justify-content:center; align-items:center; margin:8px 0 6px; }
-#guess-input{ width:200px; padding:10px 12px; font-size:18px; text-transform:uppercase; border:1px solid var(--border); border-radius:10px; background:#fff; }
-button{ padding:10px 16px; font-size:16px; border-radius:12px; border:1px solid var(--border); background:#111827; color:#fff; cursor:pointer; transition: transform .03s ease, filter .15s ease; }
-button:disabled{filter:grayscale(.6); cursor:not-allowed}
-button:active{transform: translateY(1px)}
-button.ghost{ background:#fff; color:var(--text); }
-
-#message{
-  min-height:24px;
-  margin:6px auto 10px;
-  padding:8px 12px;
-  max-width:720px;
-  background:#FFF5D0;           /* sesuai permintaan */
-  color:#111827;
-  border:1px solid #f1e0a6;
-  border-radius:10px;
-}
-#translation{ margin:4px auto 0; max-width:720px; color:#111827; font-weight:600; }
-#translation small{ color:#6b7280; font-weight:500; }
-
-#keyboard{ margin:18px auto 0; max-width:720px; }
-.key-row{ display:flex; justify-content:center; gap:6px; margin:6px 0; }
-.key{ border:none; border-radius:10px; background:var(--key); padding:12px 10px; font-weight:700; font-size:16px; min-width:36px; text-transform:uppercase; cursor:pointer; }
-.key:hover{ background: var(--key-hover); }
-.key-correct{ background: var(--correct) !important; color:#fff; }
-.key-present{ background: var(--present) !important; color:#fff; }
-.key-absent{  background: var(--absent) !important;  color:#fff; }
-
-/* Signature canvas (watermark) */
-#sig-canvas{
-  position:fixed;
-  left:50%; bottom:10px; transform:translateX(-50%);
-  pointer-events:none; opacity:.35; /* samar */
+.tile {
+  width: var(--tile-size);
+  height: var(--tile-size);
+  border: 2px solid var(--border);
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #ffffff;
+  font-size: 20px;
+  font-weight: 800;
+  text-transform: uppercase;
 }
 
-/* Responsive */
-@media (max-width:540px){
-  :root{ --tile-size:48px; --gap:5px; }
-  h1{ font-size:26px; }
-  #guess-input{ width:160px; }
-  .key{ padding:10px 8px; min-width:32px; font-size:15px;}
+.tile.correct {
+  background: var(--correct);
+  color: #ffffff;
+  border-color: transparent;
 }
-@media (max-width:380px){
-  :root{ --tile-size:42px; --gap:4px; }
-  .key{ padding:8px 6px; min-width:28px; font-size:14px;}
+
+.tile.present {
+  background: var(--present);
+  color: #ffffff;
+  border-color: transparent;
 }
-#stats {
-  margin-top: 30px;
-  padding: 12px;
-  background: #fff;
-  border: 1px solid #e5e7eb;
+
+.tile.absent {
+  background: var(--absent);
+  color: #ffffff;
+  border-color: transparent;
+}
+
+/* INPUT AND BUTTONS */
+
+.controls {
+  display: flex;
+  gap: 8px;
+  justify-content: center;
+  align-items: center;
+  margin: 7px 0 5px;
+}
+
+#guess-input {
+  width: 170px;
+  padding: 8px 10px;
+  border: 1px solid var(--border);
+  border-radius: 9px;
+  background: #ffffff;
+  font-size: 15px;
+  text-align: center;
+  text-transform: uppercase;
+}
+
+button {
+  padding: 8px 13px;
+  border: 1px solid var(--border);
   border-radius: 10px;
+  background: #111827;
+  color: #ffffff;
+  font-size: 13px;
+  cursor: pointer;
+  transition: transform 0.03s ease, filter 0.15s ease;
+}
+
+button:disabled {
+  cursor: not-allowed;
+  filter: grayscale(0.6);
+}
+
+button:active {
+  transform: translateY(1px);
+}
+
+button.ghost {
+  background: #ffffff;
+  color: var(--text);
+}
+
+/* NOTIFICATION */
+
+#message {
+  min-height: 21px;
   max-width: 720px;
-  margin-left: auto;
-  margin-right: auto;
+  margin: 5px auto 8px;
+  padding: 6px 10px;
+  border: 1px solid #f1e0a6;
+  border-radius: 9px;
+  background: #fff5d0;
+  color: #111827;
+  font-size: 13px;
+  line-height: 1.4;
+}
+
+#message:empty {
+  min-height: 0;
+  padding: 0;
+  border: none;
+  background: transparent;
+}
+
+/* TRANSLATION */
+
+#translation {
+  max-width: 720px;
+  margin: 4px auto 0;
+  color: #111827;
+  font-size: 13px;
+  font-weight: 600;
+  line-height: 1.45;
+}
+
+#translation small {
+  color: var(--muted);
+  font-size: 11px;
+  font-weight: 500;
+}
+
+/* VIRTUAL KEYBOARD */
+
+#keyboard {
+  max-width: 720px;
+  margin: 14px auto 0;
+}
+
+.key-row {
+  display: flex;
+  justify-content: center;
+  gap: 5px;
+  margin: 5px 0;
+}
+
+.key {
+  min-width: 30px;
+  padding: 9px 7px;
+  border: none;
+  border-radius: 8px;
+  background: var(--key);
+  color: var(--text);
+  font-size: 13px;
+  font-weight: 700;
+  text-transform: uppercase;
+  cursor: pointer;
+}
+
+.key:hover {
+  background: var(--key-hover);
+}
+
+.key-wide {
+  min-width: 50px;
+  padding-left: 11px;
+  padding-right: 11px;
+}
+
+.key-correct {
+  background: var(--correct) !important;
+  color: #ffffff !important;
+}
+
+.key-present {
+  background: var(--present) !important;
+  color: #ffffff !important;
+}
+
+.key-absent {
+  background: var(--absent) !important;
+  color: #ffffff !important;
+}
+
+/* STATISTICS */
+
+#stats {
+  max-width: 720px;
+  margin: 22px auto 0;
+  padding: 10px;
+  border: 1px solid var(--border);
+  border-radius: 9px;
+  background: #ffffff;
   box-shadow: var(--shadow);
 }
 
 #stats h2 {
-  margin: 0 0 12px;
-  font-size: 20px;
+  margin: 0 0 9px;
+  font-size: 17px;
   font-weight: 700;
 }
 
@@ -118,21 +260,181 @@ button.ghost{ background:#fff; color:var(--text); }
   display: flex;
   justify-content: space-around;
   text-align: center;
+  font-size: 11px;
 }
 
 #stats-body div {
   flex: 1;
 }
-/* tombol backspace lebih lebar biar nyaman */
-.key-wide{
-  min-width: 64px;
-  padding-left: 14px;
-  padding-right: 14px;
-}
 
 #stats-body span {
   display: block;
-  font-size: 24px;
+  margin-bottom: 3px;
+  font-size: 19px;
   font-weight: 700;
-  margin-bottom: 4px;
+}
+
+/* SIGNATURE */
+
+#sig-canvas {
+  position: fixed;
+  left: 50%;
+  bottom: 8px;
+  transform: translateX(-50%) scale(0.85);
+  transform-origin: center bottom;
+  pointer-events: none;
+  opacity: 0.35;
+}
+
+/* SMARTPHONE */
+
+@media (max-width: 540px) {
+  :root {
+    --tile-size: 39px;
+    --gap: 4px;
+  }
+
+  body {
+    font-size: 12px;
+  }
+
+  .container {
+    margin: 10px auto 40px;
+    padding: 8px;
+  }
+
+  h1 {
+    margin-bottom: 11px;
+    font-size: 20px;
+  }
+
+  .flag {
+    font-size: 15px;
+  }
+
+  #game-board {
+    margin-bottom: 9px;
+    padding: 8px;
+  }
+
+  .tile {
+    border-radius: 7px;
+    font-size: 16px;
+  }
+
+  .controls {
+    gap: 5px;
+    margin: 5px 0 4px;
+  }
+
+  #guess-input {
+    width: 135px;
+    padding: 7px 8px;
+    font-size: 12px;
+  }
+
+  button {
+    padding: 7px 10px;
+    font-size: 11px;
+  }
+
+  #message {
+    max-width: 360px;
+    padding: 5px 8px;
+    font-size: 11px;
+  }
+
+  #translation {
+    max-width: 360px;
+    font-size: 11px;
+  }
+
+  #translation small {
+    font-size: 10px;
+  }
+
+  #keyboard {
+    margin-top: 10px;
+  }
+
+  .key-row {
+    gap: 3px;
+    margin: 4px 0;
+  }
+
+  .key {
+    min-width: 25px;
+    padding: 7px 4px;
+    border-radius: 7px;
+    font-size: 10px;
+  }
+
+  .key-wide {
+    min-width: 40px;
+    padding-left: 7px;
+    padding-right: 7px;
+  }
+
+  #stats {
+    max-width: 360px;
+    margin-top: 14px;
+    padding: 8px;
+  }
+
+  #stats h2 {
+    margin-bottom: 6px;
+    font-size: 14px;
+  }
+
+  #stats-body {
+    font-size: 9px;
+  }
+
+  #stats-body span {
+    font-size: 15px;
+  }
+}
+
+/* SMALL SMARTPHONE */
+
+@media (max-width: 380px) {
+  :root {
+    --tile-size: 35px;
+    --gap: 3px;
+  }
+
+  h1 {
+    font-size: 18px;
+  }
+
+  .flag {
+    font-size: 14px;
+  }
+
+  #game-board {
+    padding: 7px;
+  }
+
+  .tile {
+    font-size: 14px;
+  }
+
+  #guess-input {
+    width: 120px;
+    font-size: 11px;
+  }
+
+  button {
+    font-size: 10px;
+  }
+
+  .key {
+    min-width: 22px;
+    padding: 6px 3px;
+    font-size: 9px;
+  }
+
+  .key-wide {
+    min-width: 35px;
+  }
 }
