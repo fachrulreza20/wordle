@@ -3,32 +3,48 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="theme-color" content="#eef2ff" />
   <title>Wordle ID</title>
   <link rel="stylesheet" href="style.css" />
 </head>
 <body>
   <main class="container">
-    <h1><span class="flag" aria-hidden="true">🇬🇧</span> Wordle ID</h1>
+    <header class="app-header">
+      <h1><span aria-hidden="true">🇬🇧</span> Wordle ID</h1>
+      <button id="stats-button" class="icon-button" type="button" aria-label="Open statistics">📊</button>
+    </header>
 
-    <div id="game-board" aria-label="Word grid" role="grid"></div>
+    <p id="daily-label" class="daily-label"></p>
 
-    <div class="controls">
-      <button id="submit-guess" disabled>Submit</button>
-      <button id="play-again" class="ghost" hidden>Play Again</button>
-    </div>
+    <section id="game-board" class="game-board" aria-label="Word grid" role="grid"></section>
 
-    <p id="message" role="status" aria-live="polite"></p>
-    <p id="translation" aria-live="polite"></p>
+    <p id="message" class="message" role="status" aria-live="polite"></p>
 
-    <div id="keyboard" aria-label="On-screen keyboard"></div>
+    <section id="keyboard" class="keyboard" aria-label="On-screen keyboard"></section>
 
-    <div id="stats">
-      <h2>Statistics</h2>
-      <div id="stats-body"></div>
-    </div>
+    <p id="loading-note" class="loading-note">Loading today’s word…</p>
   </main>
 
   <canvas id="sig-canvas" width="1" height="1" aria-hidden="true"></canvas>
+
+  <div id="modal-backdrop" class="modal-backdrop" hidden>
+    <section class="modal" role="dialog" aria-modal="true" aria-labelledby="modal-title">
+      <button id="close-modal" class="modal-close" type="button" aria-label="Close">×</button>
+
+      <h2 id="modal-title">Statistics</h2>
+
+      <div id="stats-grid" class="stats-grid"></div>
+
+      <div id="result-section" hidden>
+        <div id="vocab-card" class="vocab-card"></div>
+
+        <div class="modal-actions">
+          <button id="share-button" type="button">Share Result</button>
+          <button id="play-again" class="ghost" type="button">Play Again</button>
+        </div>
+      </div>
+    </section>
+  </div>
 
   <script src="script.js"></script>
 </body>
