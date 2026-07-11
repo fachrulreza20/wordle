@@ -8,20 +8,11 @@
 </head>
 <body>
   <main class="container">
-    <h1>Wordle ID</h1>
+    <h1><span class="flag" aria-hidden="true">🇬🇧</span> Wordle ID</h1>
 
     <div id="game-board" aria-label="Word grid" role="grid"></div>
 
     <div class="controls">
-      <input
-        type="text"
-        id="guess-input"
-        maxlength="5"
-        placeholder="Type or use keyboard"
-        aria-label="Type your 5-letter guess"
-        autocomplete="off"
-        autocapitalize="characters"
-      />
       <button id="submit-guess" disabled>Submit</button>
       <button id="play-again" class="ghost" hidden>Play Again</button>
     </div>
@@ -30,14 +21,13 @@
     <p id="translation" aria-live="polite"></p>
 
     <div id="keyboard" aria-label="On-screen keyboard"></div>
-    <div id="stats">
-  <h2>Statistics</h2>
-  <div id="stats-body"></div>
-</div>
 
+    <div id="stats">
+      <h2>Statistics</h2>
+      <div id="stats-body"></div>
+    </div>
   </main>
 
-  
   <canvas id="sig-canvas" width="1" height="1" aria-hidden="true"></canvas>
 
   <script src="script.js"></script>
